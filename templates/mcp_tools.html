@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chase MCP Tools Dashboard</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: #007bff;
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .stats-bar {
+            background: #f8f9fa;
+            padding: 20px 30px;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .stats-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .stats-value {
+            font-size: 2rem;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .stats-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .connection-status {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .status-indicator {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: #28a745;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.5; }
+            100% { opacity: 1; }
+        }
+
+        .controls {
+            padding: 20px 30px;
+            background: white;
+            border-bottom: 1px solid #e9ecef;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .search-box {
+            flex: 1;
+            max-width: 400px;
+            position: relative;
+        }
+
+        .search-box input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .search-box input:focus {
+            border-color: #007bff;
+        }
+
+        .refresh-btn {
+            padding: 12px 25px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .refresh-btn:hover {
+            background: #218838;
+        }
+
+        .tools-table-container {
+            padding: 30px;
+            overflow-x: auto;
+        }
+
+        .tools-table {
+            width: 100%;
+            border-collapse: collapse;
+            background: white;
+            border-radius: 10px;
+            overflow: hidden;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+
+        .tools-table th {
+            background: #007bff;
+            color: white;
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+        }
+
+        .tools-table td {
+            padding: 15px;
+            border-bottom: 1px solid #e9ecef;
+            vertical-align: top;
+        }
+
+        .tools-table tr:hover {
+            background: #f8f9fa;
+        }
+
+        .tool-name {
+            font-weight: 600;
+            color: #007bff;
+            font-size: 1.1rem;
+        }
+
+        .tool-id {
+            font-size: 0.85rem;
+            color: #666;
+            font-family: 'Courier New', monospace;
+            background: #f8f9fa;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-top: 5px;
+            display: inline-block;
+        }
+
+        .tool-description {
+            color: #333;
+            line-height: 1.5;
+            max-width: 500px;
+        }
+
+        .tool-parameters {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 5px;
+        }
+
+        .parameter-tag {
+            background: #e3f2fd;
+            color: #1976d2;
+            padding: 3px 8px;
+            border-radius: 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+        }
+
+        .tool-actions {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .action-btn {
+            width: 36px;
+            height: 36px;
+            border: none;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .settings-btn {
+            background: #f8f9fa;
+            color: #666;
+        }
+
+        .settings-btn:hover {
+            background: #007bff;
+            color: white;
+        }
+
+        .test-btn {
+            background: #28a745;
+            color: white;
+        }
+
+        .test-btn:hover {
+            background: #218838;
+            transform: scale(1.1);
+        }
+
+        .loading {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 30px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 30px;
+        }
+
+        .no-tools {
+            text-align: center;
+            padding: 50px;
+            color: #666;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+
+        .modal-content {
+            background-color: white;
+            margin: 5% auto;
+            padding: 30px;
+            border-radius: 15px;
+            width: 80%;
+            max-width: 600px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            padding-bottom: 15px;
+            border-bottom: 1px solid #e9ecef;
+        }
+
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        .close:hover {
+            color: #000;
+        }
+
+        .test-result {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+            margin-top: 15px;
+            font-family: 'Courier New', monospace;
+            font-size: 0.9rem;
+            white-space: pre-wrap;
+        }
+
+        .nav-links {
+            position: absolute;
+            top: 20px;
+            left: 30px;
+        }
+
+        .nav-link {
+            color: white;
+            text-decoration: none;
+            padding: 8px 15px;
+            border-radius: 20px;
+            background: rgba(255,255,255,0.2);
+            transition: background 0.3s;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="nav-links">
+                <a href="/" class="nav-link">← Back to Chat</a>
+            </div>
+            <h1>🔧 Chase MCP Tools Dashboard</h1>
+            <p>Model Context Protocol Tools Management & Testing</p>
+        </div>
+
+        <div class="stats-bar">
+            <div class="stats-item">
+                <div>
+                    <div class="stats-value" id="toolsCount">-</div>
+                    <div class="stats-label">Available Tools</div>
+                </div>
+            </div>
+            <div class="connection-status">
+                <div class="status-indicator" id="statusIndicator"></div>
+                <span id="connectionStatus">Connecting...</span>
+            </div>
+            <div class="stats-item">
+                <div style="text-align: right;">
+                    <div class="stats-label">MCP Endpoint</div>
+                    <div style="font-size: 0.8rem; color: #666; font-family: monospace;" id="mcpEndpoint">-</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="controls">
+            <div class="search-box">
+                <input type="text" id="searchInput" placeholder="Search tools by name or description...">
+            </div>
+            <button class="refresh-btn" id="refreshBtn" onclick="loadTools()">🔄 Refresh</button>
+        </div>
+
+        <div id="loadingIndicator" class="loading">
+            <p>🔍 Loading MCP tools...</p>
+        </div>
+
+        <div id="errorContainer"></div>
+
+        <div class="tools-table-container" id="toolsContainer" style="display: none;">
+            <table class="tools-table">
+                <thead>
+                    <tr>
+                        <th style="width: 20%;">Tool Name</th>
+                        <th style="width: 45%;">Description</th>
+                        <th style="width: 20%;">Parameters</th>
+                        <th style="width: 15%;">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="toolsTableBody">
+                </tbody>
+            </table>
+        </div>
+
+        <div id="noToolsMessage" class="no-tools" style="display: none;">
+            <h3>No Tools Found</h3>
+            <p>No MCP tools are currently available or match your search criteria.</p>
+        </div>
+    </div>
+
+    <!-- Test Tool Modal -->
+    <div id="testModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3 id="modalToolName">Test Tool</h3>
+                <span class="close" onclick="closeModal()">&times;</span>
+            </div>
+            <div id="modalContent">
+                <p>Testing tool...</p>
+                <div id="testResult" class="test-result" style="display: none;"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let allTools = [];
+        let currentToolId = null;
+
+        async function loadTools() {
+            try {
+                document.getElementById('loadingIndicator').style.display = 'block';
+                document.getElementById('toolsContainer').style.display = 'none';
+                document.getElementById('errorContainer').innerHTML = '';
+
+                const response = await fetch('/api/mcp/tools');
+                const data = await response.json();
+
+                if (data.status === 'success') {
+                    allTools = data.tools;
+                    document.getElementById('toolsCount').textContent = data.total_tools;
+                    document.getElementById('mcpEndpoint').textContent = data.endpoint;
+                    document.getElementById('connectionStatus').textContent = 'Connected';
+
+                    displayTools(allTools);
+                    showSuccess(`✅ Successfully loaded ${data.total_tools} MCP tools`);
+                } else {
+                    showError(`❌ Error loading tools: ${data.error}`);
+                }
+            } catch (error) {
+                showError(`❌ Connection error: ${error.message}`);
+                document.getElementById('connectionStatus').textContent = 'Connection Failed';
+                document.getElementById('statusIndicator').style.background = '#dc3545';
+            } finally {
+                document.getElementById('loadingIndicator').style.display = 'none';
+            }
+        }
+
+        function displayTools(tools) {
+            const tbody = document.getElementById('toolsTableBody');
+            tbody.innerHTML = '';
+
+            if (tools.length === 0) {
+                document.getElementById('toolsContainer').style.display = 'none';
+                document.getElementById('noToolsMessage').style.display = 'block';
+                return;
+            }
+
+            document.getElementById('toolsContainer').style.display = 'block';
+            document.getElementById('noToolsMessage').style.display = 'none';
+
+            tools.forEach((tool, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>
+                        <div class="tool-name">${tool.name}</div>
+                        <div class="tool-id">${tool.id}</div>
+                    </td>
+                    <td>
+                        <div class="tool-description">${tool.description}</div>
+                    </td>
+                    <td>
+                        <div class="tool-parameters">
+                            ${tool.parameters.map(param =>
+                                `<span class="parameter-tag">${param}</span>`
+                            ).join('')}
+                            ${tool.parameters.length === 0 ? '<span style="color: #999;">No parameters</span>' : ''}
+                        </div>
+                    </td>
+                    <td>
+                        <div class="tool-actions">
+                            <button class="action-btn settings-btn" onclick="openSettings('${tool.id}')" title="Settings">
+                                ⚙️
+                            </button>
+                            <button class="action-btn test-btn" onclick="testTool('${tool.id}')" title="Test Tool">
+                                🧪
+                            </button>
+                        </div>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function searchTools() {
+            const searchTerm = document.getElementById('searchInput').value.toLowerCase();
+            const filteredTools = allTools.filter(tool =>
+                tool.name.toLowerCase().includes(searchTerm) ||
+                tool.description.toLowerCase().includes(searchTerm) ||
+                tool.id.toLowerCase().includes(searchTerm)
+            );
+            displayTools(filteredTools);
+        }
+
+        async function testTool(toolId) {
+            currentToolId = toolId;
+            const tool = allTools.find(t => t.id === toolId);
+
+            document.getElementById('modalToolName').textContent = `Test: ${tool.name}`;
+            document.getElementById('modalContent').innerHTML = `
+                <p><strong>Tool ID:</strong> ${tool.id}</p>
+                <p><strong>Description:</strong> ${tool.description}</p>
+                <p><strong>Parameters:</strong> ${tool.parameters.join(', ') || 'None'}</p>
+                <p style="margin-top: 15px;">Testing tool with default parameters...</p>
+                <div id="testResult" class="test-result" style="display: none;"></div>
+            `;
+
+            document.getElementById('testModal').style.display = 'block';
+
+            try {
+                const response = await fetch(`/api/mcp/tool/${toolId}/test`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ parameters: {} })
+                });
+
+                const result = await response.json();
+                const resultDiv = document.getElementById('testResult');
+
+                if (result.status === 'success') {
+                    resultDiv.innerHTML = `<strong>✅ Test Result:</strong>\n${JSON.stringify(result.result, null, 2)}`;
+                    resultDiv.style.background = '#d4edda';
+                    resultDiv.style.color = '#155724';
+                } else {
+                    resultDiv.innerHTML = `<strong>❌ Test Error:</strong>\n${result.error}`;
+                    resultDiv.style.background = '#f8d7da';
+                    resultDiv.style.color = '#721c24';
+                }
+
+                resultDiv.style.display = 'block';
+            } catch (error) {
+                const resultDiv = document.getElementById('testResult');
+                resultDiv.innerHTML = `<strong>❌ Connection Error:</strong>\n${error.message}`;
+                resultDiv.style.background = '#f8d7da';
+                resultDiv.style.color = '#721c24';
+                resultDiv.style.display = 'block';
+            }
+        }
+
+        function openSettings(toolId) {
+            alert(`Settings for tool: ${toolId}\n\nSettings functionality coming soon!`);
+        }
+
+        function closeModal() {
+            document.getElementById('testModal').style.display = 'none';
+        }
+
+        function showError(message) {
+            document.getElementById('errorContainer').innerHTML = `<div class="error">${message}</div>`;
+        }
+
+        function showSuccess(message) {
+            document.getElementById('errorContainer').innerHTML = `<div class="success">${message}</div>`;
+            setTimeout(() => {
+                document.getElementById('errorContainer').innerHTML = '';
+            }, 5000);
+        }
+
+        // Event listeners
+        document.getElementById('searchInput').addEventListener('input', searchTools);
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('testModal');
+            if (event.target == modal) {
+                closeModal();
+            }
+        }
+
+        // Load tools on page load
+        document.addEventListener('DOMContentLoaded', loadTools);
+    </script>
+</body>
+</html>

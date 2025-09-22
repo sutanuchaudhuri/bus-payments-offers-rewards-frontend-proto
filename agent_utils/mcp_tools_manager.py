@@ -64,3 +64,19 @@ class MCPToolsManager:
                 "result": f"Mock result for {tool_name} with parameters {parameters}",
                 "tool": tool_name
             }
+
+    def get_tools_list(self):
+        """Get formatted list of tools for API response"""
+        tools_list = []
+        for tool_id, tool_data in self.available_tools.items():
+            tools_list.append({
+                'id': tool_id,
+                'name': tool_data.get('name', tool_id),
+                'description': tool_data.get('description', 'No description available'),
+                'parameters': tool_data.get('parameters', [])
+            })
+        return tools_list
+
+    def get_tools_count(self):
+        """Get total count of available tools"""
+        return len(self.available_tools)
