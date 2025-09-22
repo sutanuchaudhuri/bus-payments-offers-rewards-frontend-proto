@@ -1,0 +1,589 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bus Payments & Rewards Chat</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .chat-container {
+            width: 90%;
+            max-width: 1200px;
+            height: 80vh;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            display: flex;
+            overflow: hidden;
+        }
+
+        .sidebar {
+            width: 300px;
+            background: #f8f9fa;
+            border-right: 1px solid #e9ecef;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-header {
+            background: #007bff;
+            color: white;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .customer-selection {
+            margin-bottom: 20px;
+        }
+
+        .customer-selection label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: 600;
+            color: #333;
+        }
+
+        .customer-selection select {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        .chat-info {
+            background: #e3f2fd;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+
+        .chat-info h3 {
+            color: #1976d2;
+            margin-bottom: 10px;
+        }
+
+        .agent-list {
+            flex: 1;
+        }
+
+        .agent-list h3 {
+            margin-bottom: 15px;
+            color: #333;
+        }
+
+        .agent-item {
+            background: white;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border-left: 4px solid #007bff;
+        }
+
+        .agent-item h4 {
+            color: #007bff;
+            font-size: 14px;
+        }
+
+        .agent-item p {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .chat-messages {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            background: #f8f9fa;
+        }
+
+        .message {
+            margin-bottom: 20px;
+            animation: fadeIn 0.3s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .message.user {
+            text-align: right;
+        }
+
+        .message.agent {
+            text-align: left;
+        }
+
+        .message-content {
+            display: inline-block;
+            max-width: 70%;
+            padding: 15px;
+            border-radius: 18px;
+            word-wrap: break-word;
+        }
+
+        .message.user .message-content {
+            background: #007bff;
+            color: white;
+        }
+
+        .message.agent .message-content {
+            background: white;
+            color: #333;
+            border: 1px solid #e9ecef;
+        }
+
+        .message-meta {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+
+        .agent-badge {
+            background: #28a745;
+            color: white;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 10px;
+            margin-left: 5px;
+        }
+
+        .chat-input-container {
+            padding: 20px;
+            background: white;
+            border-top: 1px solid #e9ecef;
+        }
+
+        .chat-input {
+            display: flex;
+            gap: 10px;
+        }
+
+        .chat-input input {
+            flex: 1;
+            padding: 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 25px;
+            font-size: 14px;
+            outline: none;
+        }
+
+        .chat-input input:focus {
+            border-color: #007bff;
+        }
+
+        .chat-input button {
+            padding: 15px 25px;
+            background: #007bff;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: 600;
+        }
+
+        .chat-input button:hover {
+            background: #0056b3;
+        }
+
+        .chat-input button:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .start-chat-btn {
+            width: 100%;
+            padding: 15px;
+            background: #28a745;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            margin-bottom: 20px;
+        }
+
+        .start-chat-btn:hover {
+            background: #218838;
+        }
+
+        .start-chat-btn:disabled {
+            background: #6c757d;
+            cursor: not-allowed;
+        }
+
+        .visualization-panel {
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+
+        .visualization-panel h3 {
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .stat-item {
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 20px;
+            font-weight: bold;
+            color: #007bff;
+        }
+
+        .stat-label {
+            font-size: 12px;
+            color: #666;
+        }
+
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+
+        .error {
+            background: #f8d7da;
+            color: #721c24;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+
+        .success {
+            background: #d4edda;
+            color: #155724;
+            padding: 10px;
+            border-radius: 8px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="sidebar">
+            <div class="customer-selection">
+                <label for="customerSelect">Select Customer:</label>
+                <select id="customerSelect">
+                    <option value="">Choose a customer...</option>
+                </select>
+            </div>
+
+            <button id="startChatBtn" class="start-chat-btn" disabled>Start Chat Session</button>
+
+            <div id="chatInfo" class="chat-info" style="display: none;">
+                <h3>Session Info</h3>
+                <p><strong>Customer:</strong> <span id="currentCustomer"></span></p>
+                <p><strong>Session ID:</strong> <span id="currentSession"></span></p>
+            </div>
+
+            <div class="agent-list">
+                <h3>Available Agents</h3>
+                <div id="agentsList"></div>
+            </div>
+
+            <div id="visualization" class="visualization-panel" style="display: none;">
+                <h3>Session Stats</h3>
+                <div class="stats">
+                    <div class="stat-item">
+                        <div class="stat-value" id="messageCount">0</div>
+                        <div class="stat-label">Messages</div>
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value" id="agentsUsed">0</div>
+                        <div class="stat-label">Agents</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="main-chat">
+            <div class="chat-header">
+                <h1>Chase Bus Payments & Rewards Assistant</h1>
+                <p>Multi-Agent Customer Support System</p>
+            </div>
+
+            <div id="chatMessages" class="chat-messages">
+                <div class="loading" id="loadingIndicator">
+                    <p>Connecting to agents...</p>
+                </div>
+            </div>
+
+            <div class="chat-input-container">
+                <div class="chat-input">
+                    <input type="text" id="messageInput" placeholder="Type your message here..." disabled>
+                    <button id="sendBtn" disabled>Send</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class ChatApp {
+            constructor() {
+                this.sessionId = null;
+                this.customerId = null;
+                this.agents = {};
+                this.initializeElements();
+                this.loadCustomers();
+                this.loadAgents();
+                this.bindEvents();
+            }
+
+            initializeElements() {
+                this.customerSelect = document.getElementById('customerSelect');
+                this.startChatBtn = document.getElementById('startChatBtn');
+                this.chatInfo = document.getElementById('chatInfo');
+                this.currentCustomer = document.getElementById('currentCustomer');
+                this.currentSession = document.getElementById('currentSession');
+                this.chatMessages = document.getElementById('chatMessages');
+                this.messageInput = document.getElementById('messageInput');
+                this.sendBtn = document.getElementById('sendBtn');
+                this.agentsList = document.getElementById('agentsList');
+                this.visualization = document.getElementById('visualization');
+                this.messageCount = document.getElementById('messageCount');
+                this.agentsUsed = document.getElementById('agentsUsed');
+                this.loadingIndicator = document.getElementById('loadingIndicator');
+            }
+
+            async loadCustomers() {
+                try {
+                    const response = await fetch('/api/customers');
+                    const customers = await response.json();
+
+                    customers.forEach(customer => {
+                        const option = document.createElement('option');
+                        option.value = customer.id;
+                        option.textContent = `${customer.name} (${customer.id})`;
+                        this.customerSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    this.showError('Failed to load customers');
+                }
+            }
+
+            async loadAgents() {
+                try {
+                    const response = await fetch('/api/agents');
+                    this.agents = await response.json();
+
+                    Object.values(this.agents).forEach(agent => {
+                        const agentDiv = document.createElement('div');
+                        agentDiv.className = 'agent-item';
+                        agentDiv.innerHTML = `
+                            <h4>${agent.name}</h4>
+                            <p>${agent.description}</p>
+                        `;
+                        this.agentsList.appendChild(agentDiv);
+                    });
+                } catch (error) {
+                    this.showError('Failed to load agents');
+                }
+            }
+
+            bindEvents() {
+                this.customerSelect.addEventListener('change', () => {
+                    this.startChatBtn.disabled = !this.customerSelect.value;
+                });
+
+                this.startChatBtn.addEventListener('click', () => {
+                    this.startChatSession();
+                });
+
+                this.sendBtn.addEventListener('click', () => {
+                    this.sendMessage();
+                });
+
+                this.messageInput.addEventListener('keypress', (e) => {
+                    if (e.key === 'Enter') {
+                        this.sendMessage();
+                    }
+                });
+            }
+
+            async startChatSession() {
+                const customerId = this.customerSelect.value;
+                if (!customerId) return;
+
+                try {
+                    this.loadingIndicator.style.display = 'block';
+
+                    const response = await fetch('/api/chat/start', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ customer_id: customerId })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        this.sessionId = data.session_id;
+                        this.customerId = data.customer_id;
+
+                        this.currentCustomer.textContent = this.customerSelect.options[this.customerSelect.selectedIndex].text;
+                        this.currentSession.textContent = this.sessionId.substring(0, 8) + '...';
+
+                        this.chatInfo.style.display = 'block';
+                        this.visualization.style.display = 'block';
+                        this.messageInput.disabled = false;
+                        this.sendBtn.disabled = false;
+                        this.startChatBtn.disabled = true;
+                        this.customerSelect.disabled = true;
+
+                        this.clearMessages();
+                        this.addMessage('system', 'Chat session started! How can I help you today?');
+                        this.loadChatHistory();
+
+                    } else {
+                        this.showError(data.error || 'Failed to start chat session');
+                    }
+                } catch (error) {
+                    this.showError('Failed to start chat session');
+                } finally {
+                    this.loadingIndicator.style.display = 'none';
+                }
+            }
+
+            async sendMessage() {
+                const message = this.messageInput.value.trim();
+                if (!message || !this.sessionId) return;
+
+                this.addMessage('user', message);
+                this.messageInput.value = '';
+                this.sendBtn.disabled = true;
+
+                try {
+                    const response = await fetch('/api/chat/message', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({ message })
+                    });
+
+                    const data = await response.json();
+
+                    if (response.ok) {
+                        this.addMessage('agent', data.response, data.agent_name, data.agent_id);
+                        this.updateVisualization();
+                    } else {
+                        this.showError(data.error || 'Failed to send message');
+                    }
+                } catch (error) {
+                    this.showError('Failed to send message');
+                } finally {
+                    this.sendBtn.disabled = false;
+                }
+            }
+
+            addMessage(type, content, agentName = null, agentId = null) {
+                const messageDiv = document.createElement('div');
+                messageDiv.className = `message ${type}`;
+
+                let metaInfo = '';
+                if (type === 'agent' && agentName) {
+                    metaInfo = `<div class="message-meta">
+                        ${agentName}
+                        <span class="agent-badge">${agentId}</span>
+                        <span style="margin-left: 10px;">${new Date().toLocaleTimeString()}</span>
+                    </div>`;
+                } else if (type === 'user') {
+                    metaInfo = `<div class="message-meta">${new Date().toLocaleTimeString()}</div>`;
+                }
+
+                messageDiv.innerHTML = `
+                    <div class="message-content">${content}</div>
+                    ${metaInfo}
+                `;
+
+                this.chatMessages.appendChild(messageDiv);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+
+            async loadChatHistory() {
+                try {
+                    const response = await fetch('/api/chat/history');
+                    const history = await response.json();
+
+                    history.forEach(msg => {
+                        if (msg.type === 'user') {
+                            this.addMessage('user', msg.content);
+                        } else if (msg.type === 'agent') {
+                            const agent = Object.values(this.agents).find(a => a.name === msg.agent_id);
+                            this.addMessage('agent', msg.content, agent?.name || 'Agent', msg.agent_id);
+                        }
+                    });
+                } catch (error) {
+                    console.error('Failed to load chat history:', error);
+                }
+            }
+
+            async updateVisualization() {
+                if (!this.sessionId) return;
+
+                try {
+                    const response = await fetch(`/api/visualization/session/${this.sessionId}`);
+                    const data = await response.json();
+
+                    this.messageCount.textContent = data.message_count;
+                    this.agentsUsed.textContent = data.agents_used.length;
+                } catch (error) {
+                    console.error('Failed to update visualization:', error);
+                }
+            }
+
+            clearMessages() {
+                this.chatMessages.innerHTML = '';
+            }
+
+            showError(message) {
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'error';
+                errorDiv.textContent = message;
+                this.chatMessages.appendChild(errorDiv);
+                this.chatMessages.scrollTop = this.chatMessages.scrollHeight;
+            }
+        }
+
+        // Initialize the chat app when the page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            new ChatApp();
+        });
+    </script>
+</body>
+</html>
