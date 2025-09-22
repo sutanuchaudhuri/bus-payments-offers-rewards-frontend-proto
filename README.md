@@ -1,4 +1,4 @@
-# Chase Bus Payments & Rewards Chat Application
+# Org Bus Payments & Rewards Chat Application
 
 A Flask-based web application using OpenAI Agents with FastMCP integration for multi-agent customer support.
 
@@ -9,7 +9,7 @@ A Flask-based web application using OpenAI Agents with FastMCP integration for m
 - 🗄️ **SQLite Session Persistence** - Chat history and context management
 - 🔧 **MCP Tools Integration** - 76+ tools via FastMCP server
 - 📊 **Visualization Dashboard** - Session stats and agent usage analytics
-- 🎯 **Chase Branding** - Professional UI with Chase bank styling
+- 🎯 **Org Branding** - Professional UI with bank styling
 
 ## Quick Start
 
