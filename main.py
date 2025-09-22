@@ -10,7 +10,7 @@ from openai import OpenAI
 import uuid
 
 # Import utility classes from agent_utils package
-from agent_utils import FastMCPToolsManager, SessionManager, ContextManager, AgentOrchestrator, DatabaseManager
+from agent_utils import MCPToolsManager, SessionManager, ContextManager, AgentOrchestrator, DatabaseManager
 
 # Load environment variables
 load_dotenv()
@@ -38,7 +38,7 @@ db_manager = DatabaseManager()
 db_manager.init_database()
 
 # Initialize components after database is ready
-mcp_tools = FastMCPToolsManager(MCP_ENDPOINT_SSE)
+mcp_tools = MCPToolsManager(MCP_ENDPOINT_SSE)
 orchestrator = AgentOrchestrator(mcp_tools, client)
 session_manager = SessionManager()
 context_manager = ContextManager()

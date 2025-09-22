@@ -1,16 +1,14 @@
 import sqlite3
 import json
 from datetime import datetime
-from ..database import AgentsDAO
 
 
 class AgentOrchestrator:
     """Orchestrate multiple agents for different tasks"""
 
-    def __init__(self, mcp_tools, openai_client=None, db_path='chat_sessions.db'):
+    def __init__(self, mcp_tools, openai_client=None):
         self.mcp_tools = mcp_tools
         self.client = openai_client
-        self.agents_dao = AgentsDAO(db_path)
         self.agents = {
             'payment_agent': {
                 'name': 'Payment Processing Agent',
@@ -40,14 +38,19 @@ class AgentOrchestrator:
         self._initialize_agents_db()
 
     def _initialize_agents_db(self):
-        """Initialize agents in database using DAO"""
+        """Initialize agents in database"""
+        conn = sqlite3.connect('chat_sessions.db')
+        cursor = conn.cursor()
+
         for agent_id, agent_data in self.agents.items():
-            self.agents_dao.create_or_update_agent(
-                agent_id,
-                agent_data['name'],
-                agent_data['description'],
-                agent_data['tools']
-            )
+            cursor.execute('''
+                INSERT OR REPLACE INTO agents (id, name, description, tools)
+                VALUES (?, ?, ?, ?)
+            ''', (agent_id, agent_data['name'], agent_data['description'],
+                  json.dumps(agent_data['tools'])))
+
+        conn.commit()
+        conn.close()
 
     def get_appropriate_agent(self, message):
         """Determine which agent should handle the message using AI"""
